@@ -1,0 +1,6 @@
+## Interface: 40200
+## Title: nobgspam
+## Notes: Disables messages in the center of your screen in battlegrounds.
+## Author: burial
+## Version: 1
+main.lua
