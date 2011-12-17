@@ -1,29 +1,32 @@
 local mod = CreateFrame('frame')
-mod:SetScript('OnEvent', function(self, event, ...)
-  return self[event](self, ...)
-end)
+mod:SetScript('OnEvent', function(self, event, ...) return self[event](self, ...) end)
 mod:RegisterEvent('ADDON_LOADED')
-mod.ADDON_LOADED = function(self, addon)
-  if addon == self:GetName() then
+
+function mod:ADDON_LOADED(addon)
+  if addon == 'nobgspam' then
     self:UnregisterEvent('ADDON_LOADED')
+
+    RaidBossEmoteFrame.RealShow = RaidBossEmoteFrame.Show
+    RaidBossEmoteFrame.RealHide = RaidBossEmoteFrame.Hide
+
+    local NOP = function() end
+    RaidBossEmoteFrame.Show = NOP
+    RaidBossEmoteFrame.Hide = NOP
+
     self:RegisterEvent('PLAYER_ENTERING_WORLD')
     self:PLAYER_ENTERING_WORLD()
+
     return true
-  else
-    return false
   end
 end
-mod.PLAYER_ENTERING_WORLD = function(self)
-  if select(2, IsInInstance()) == 'pvp' then
-    self:RegisterEvent('CHAT_MSG_RAID_BOSS_EMOTE')
-    RaidBossEmoteFrame:UnregisterEvent('CHAT_MSG_RAID_BOSS_EMOTE')
+
+function mod:PLAYER_ENTERING_WORLD()
+  local _, instanceType = IsInInstance()
+  if instanceType == 'pvp' then -- battleground
+    RaidBossEmoteFrame:RealHide()
   else
-    self:UnregisterEvent('CHAT_MSG_RAID_BOSS_EMOTE')
-    RaidBossEmoteFrame:RegisterEvent('CHAT_MSG_RAID_BOSS_EMOTE')
+    RaidBossEmoteFrame:RealShow()
   end
-  return true
-end
-mod.CHAT_MSG_RAID_BOSS_EMOTE = function(self, msg)
-  DEFAULT_CHAT_FRAME:AddMessage(msg)
+
   return true
 end
